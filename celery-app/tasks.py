@@ -3,22 +3,64 @@ import time
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
+from random import randint
 
 celery = Celery('tasks',
                 broker='redis://redis:6379/0',
                 backend='redis://redis:6379/0')
 
 
+def find_next_url(next_links_container_content, links, main_url):
+    possible_next_links = [a['href'] for a in next_links_container_content.find_all("a", href=True)]
+    if main_url:
+        next_link = main_url + possible_next_links[randint(0, len(possible_next_links) - 1)]
+        links.append(next_link)
+        url = next_link
+    else:
+        next_link = possible_next_links[randint(0, len(possible_next_links) - 1)]
+        links.append(next_link)
+        url = next_link
+    return url, links
+
+
 @celery.task(name='mine')
-def mine(url, ):
+def mine(url,
+         max_number,
+         similar_products_container_tag,
+         similar_products_container_class,
+         price_container_tag,
+         price_container_class,
+         main_url=None):
     driver = webdriver.Remote(command_executor='http://172.20.0.3:4444/wd/hub',
                               desired_capabilities=DesiredCapabilities.FIREFOX)
-    driver.get(
-        "https://www.americanas.com.br/produto/132381423/notebook-lenovo-2-em-1-yoga-520-intel-core-i7-8gb-1tb-tela-14-windows-10-platinum?DCSext.recom=RR_item_page.rr1-ClickCP&nm_origem=rec_item_page.rr1-ClickCP&nm_ranking_rec=13")
-    time.sleep(10)
-    soup = BeautifulSoup(driver.page_source, "lxml")
-    print(soup.find("div", class_="main-price").text)
-    next_item = soup.find("div", class_="slick-track")
-    next_link = [a['href'] for a in next_item.find_all("a", href=True)]
-    driver.quit()
-    return next_link
+    links = list()
+    content = list()
+    while True:
+        driver.get(url)
+        time.sleep(5)
+        soup = BeautifulSoup(driver.page_source, "lxml")
+        soup.prettify()
+        if not any(d.get('title', None).contains(soup.title.text) for d in content):
+            next_links_container_content = soup.find(similar_products_container_tag, class_=similar_products_container_class)
+            url, links = find_next_url(next_links_container_content, links, main_url)
+            continue
+        elif 'notebook' not in soup.title.text.lower():
+            url = links[randint(0, len(links) - 1)]
+            continue
+        data = {
+            "title": [soup.title.text],
+            "data": [soup.find(price_container_tag, class_=price_container_class).text]
+        }
+        content.append(data)
+        next_links_container_content = soup.find(similar_products_container_tag, class_=similar_products_container_class)
+        if len(content) == max_number:
+            break
+        try:
+            url, links = find_next_url(next_links_container_content, links, main_url)
+            continue
+
+        except Exception as e:
+            print("error: " + str(e))
+            url = links[randint(0, len(links) - 1)]
+            continue
+    return content
