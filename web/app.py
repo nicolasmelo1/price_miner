@@ -13,16 +13,19 @@ def application_status():
 
 @app.route('/mine', methods=['GET', 'POST'])
 def mine():
-    data = request.get_json()
-    task = celery.send_task('mine', kwargs={})
-    return "<a href='{url}'>check status of {id} </a>".format(id=task.id,
-                url=url_for('check_task', id=task.id, _external=True))
+    '''
+    :return: task_id
+    '''
+    if request.method == 'POST':
+        data = request.get_json()
+        task = celery.send_task('mine', kwargs=data)
+        return task.id
 
 
 @app.route('/check/<string:id>')
 def check_task(id):
     res = celery.AsyncResult(id)
-    if res.state==states.PENDING:
+    if res.state == 'PENDING':
         return res.state
     else:
         return jsonify(

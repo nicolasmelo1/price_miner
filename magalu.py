@@ -6,8 +6,8 @@ from random import randint
 import sys
 import time
 
-sys.setrecursionlimit(10000)
-driver = webdriver.Firefox()
+#sys.setrecursionlimit(10000)
+#driver = webdriver.Firefox()
 
 # magalu
 '''
@@ -132,13 +132,14 @@ casas_bahia.to_csv('casasbahia_notebooks.csv', sep=';', index=False)
 '''
 
 # americanas 
+'''
 def getData(driver, url, data, max_number, links):
 
     driver.get(url)
     time.sleep(5)   
     soup = BeautifulSoup(driver.page_source, "lxml")
     soup.prettify()
-    if (data[data['title'].str.contains(soup.title.text)].empty == False):                 
+    if not data[data['title'].str.contains(soup.title.text)].empty:
         print("already exists in dataframe")         
         next_item = soup.find("div", class_="slick-list")
         next_link = [a['href'] for a in next_item.find_all("a", href=True)]
@@ -184,3 +185,16 @@ americanas['De'] = americanas['dados1'].apply(lambda x: (x.split('>')[0].split('
 americanas['Parcelas'] = americanas['dados1'].apply(lambda x: x.split('>')[0].split(',')[1][2:].replace('$','').replace(' ',''))
 
 americanas.to_csv('americanas_notebooks_1.csv', sep=';', index=False)
+'''
+content = list()
+content.append({
+    'title': 'Teste',
+    'dados': 1
+})
+content.append({
+    'title': 'Teste1',
+    'dados': 2
+})
+print([d for d in content if 'Teste1' in d.get('title', None)])
+if any([d for d in content if 'Teste2' in d.get('title', None)]):
+    print('teste')
