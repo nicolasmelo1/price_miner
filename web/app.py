@@ -13,25 +13,45 @@ def application_status():
 
 @app.route('/mine', methods=['GET', 'POST'])
 def mine():
-    '''
-    :return: task_id
-    '''
+    """
+    Sends async run to celery to get data from e-commerce websites.
+
+    If POST:
+    JSON - Parameters
+    -----------------------
+    url (String): Initial url from e-commerce to extract data from.
+    max_number (Integer): max number of items to extract from e-commerce.
+    similar_products_container_tag (String): The container for similar products (div, ul, etc.).
+    similar_products_container_class (String): The class of the container for similar products.
+    price_container_tag (String): The container to get products price (div, ul, etc.).
+    price_container_class (String): The class of the container to get products price.
+    OPTIONAL main_url (String): The main url of the website.
+    :return: Celery task id
+
+    If GET:
+    Parameters
+    -----------------------
+    job_id (String): The id of celery task
+    if Job Running:
+        :return: The task state
+    If Job Completed
+        :return: JSON with task id and task result
+    """
+
     if request.method == 'POST':
         data = request.get_json()
         task = celery.send_task('mine', kwargs=data)
         return task.id
-
-
-@app.route('/check/<string:id>')
-def check_task(id):
-    res = celery.AsyncResult(id)
-    if res.state == 'PENDING':
-        return res.state
-    else:
-        return jsonify(
-            task_id=res.id,
-            content=res.result
-        )
+    if request.method == 'GET':
+        request.args.get('job_id')
+        res = celery.AsyncResult(id)
+        if res.state == 'PENDING':
+            return res.state
+        else:
+            return jsonify(
+                task_id=res.id,
+                content=res.result
+            )
 
 
 if __name__ == '__main__':
