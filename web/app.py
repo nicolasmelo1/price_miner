@@ -25,6 +25,10 @@ def mine():
     similar_products_container_class (String): The class of the container for similar products.
     price_container_tag (String): The container to get products price (div, ul, etc.).
     price_container_class (String): The class of the container to get products price.
+    OPTIONAL item_types (List[String]): Tells what string the title can contain. Ex.: If you only
+                                        want to retrieve notebooks you would send a list ['notebook']
+                                        if you want monitors also would be ['notebook', 'monitor']
+    OPTIONAL sleep_time (Integer): Max time to sleep until retrieve data. Default: 5
     OPTIONAL main_url (String): The main url of the website.
     :return: Celery task id
 
@@ -34,7 +38,7 @@ def mine():
     job_id (String): The id of celery task
     if Job Running:
         :return: The task state
-    If Job Completed
+    If Job Completed:
         :return: JSON with task id and task result
     """
 
@@ -43,10 +47,16 @@ def mine():
         task = celery.send_task('mine', kwargs=data)
         return task.id
     if request.method == 'GET':
-        request.args.get('job_id')
-        res = celery.AsyncResult(id)
+        job_id = request.args.get('job_id')
+        res = celery.AsyncResult(job_id)
         if res.state == 'PENDING':
             return res.state
+        elif res.state == 'EXTRACTING':
+            return jsonify(
+                task_id=res.id,
+                status=res.state,
+                data=res.result
+            )
         else:
             return jsonify(
                 task_id=res.id,

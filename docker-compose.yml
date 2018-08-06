@@ -7,6 +7,7 @@ services:
       - "4444:4444"
   firefox:
     image: selenium/node-firefox:3.12.0-cobalt
+    shm_size: 2g
     depends_on:
       - selenium-hub
     environment:
