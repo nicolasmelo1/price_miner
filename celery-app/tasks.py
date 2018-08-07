@@ -34,7 +34,8 @@ def mine(self, **kwargs):
     main_url = kwargs.get('main_url', None)
     item_types = kwargs.get('item_types', [])
     sleep_time = kwargs.get('sleep_time', 5)
-
+    max_number = 5 if max_number > 85 else max_number
+    sleep_time = 5 if sleep_time > 60 else sleep_time
     driver = webdriver.Remote(command_executor='selenium-hub:4444/wd/hub',
                               desired_capabilities=DesiredCapabilities.FIREFOX)
     links = list()
