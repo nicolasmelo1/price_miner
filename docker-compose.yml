@@ -3,6 +3,7 @@ services:
   selenium-hub:
     image: selenium/hub:3.12.0-cobalt
     container_name: selenium-hub
+    timeout: 60
     ports:
       - "4444:4444"
   firefox:
