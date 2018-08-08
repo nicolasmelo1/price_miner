@@ -37,7 +37,7 @@ def mine(self, **kwargs):
     max_number = 5 if max_number > 85 else max_number
     sleep_time = 5 if sleep_time > 60 else sleep_time
     driver = webdriver.Remote(command_executor='selenium-hub:4444/wd/hub',
-                              desired_capabilities=DesiredCapabilities.FIREFOX)
+                              desired_capabilities=DesiredCapabilities.CHROME)
     links = list()
     content = list()
     while True:
@@ -92,7 +92,7 @@ def mine(self, **kwargs):
             print("[ERROR]: Error when trying to get url: %s with error: %s" % (url, str(e)))
             driver.quit()
             driver = webdriver.Remote(command_executor='selenium-hub:4444/wd/hub',
-                                      desired_capabilities=DesiredCapabilities.FIREFOX)
+                                      desired_capabilities=DesiredCapabilities.CHROME)
             self.update_state(state='EXTRACTING', meta={
                 'job_percent_completed': len(content) / max_number,
                 'job_current_status': 'Unexpected Error',
