@@ -1,16 +1,15 @@
 version: '3.3'
 services:
-  selenium-hub:
+  seleniumhub:
     image: selenium/hub:3.12.0-cobalt
-    container_name: selenium-hub
     ports:
       - "4444:4444"
   chrome:
     image: selenium/node-chrome:3.14.0-arsenic
     depends_on:
-      - selenium-hub
+      - seleniumhub
     environment:
-      - HUB_HOST=selenium-hub
+      - HUB_HOST=seleniumhub
       - HUB_PORT=4444
   db:
     image: postgres
@@ -18,27 +17,25 @@ services:
       - "5432:5432"
   redis:
     image: redis
-
   worker:
-    build:
-      context: celery-app
+    build: .
+    command: celery -A app.celery worker
+    volumes:
+      - .:/code
     depends_on:
       - redis
   web:
-    build:
-      context: ./web
-    command: python app.py
+    build: .
+    command: flask run --host=0.0.0.0
     ports:
       - "5000:5000"
-    links:
-      - selenium-hub
     environment:
-    - HUB_HOST=selenium-hub
-    - HUB_PORT=4444
+      - FLASK_APP=./app.py
+      - FLASK_ENV=development
+      - FLASK_DEBUG=1
     depends_on:
-    - db
-    - selenium-hub
-    - firefox
-    - redis
-    - worker
+      - db
+      - seleniumhub
+      - chrome
+      - redis
 

@@ -1,12 +1,12 @@
 FROM python:3.6-slim
 
-
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
-ENV C_FORCE_ROOT true
 
-COPY . /web
-WORKDIR /web
-RUN python3.6 -m pip install --upgrade pip
+WORKDIR /code
+
+ADD requirements.txt /code/
 RUN pip install -r requirements.txt
 
+COPY . /code/
+EXPOSE 8000

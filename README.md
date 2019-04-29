@@ -40,10 +40,14 @@ Example:
 {
 	"url": "https://www.magazineluiza.com.br/notebook-hp-240-g5-14-polegadas-i3-6006u-4gb-500gb-dvdrw-win-10-pro/p/7280842/in/note/",
 	"max_number": 2,
-	"similar_products_container_tag": "li",
-	"similar_products_container_class": "showcase__product-box js-suggestion slick-slide slick-current slick-active",
-	"price_container_tag": "div",
-	"price_container_class": "price-template",
+	"similar_products_container_tag": "div",
+	"similar_products_container_class": "slick-track",
+	"data": [{
+	  "name": "price",
+	  "container_tag": "div",
+	  "container_class": "price-template",
+	  ￿￿"to_get": "text"
+    }],
 	"sleep_time": 20
 }
 ```

@@ -1,14 +1,26 @@
-from flask import Flask, jsonify, url_for
-import celery.states as states
-from worker import celery
+from flask import Flask, jsonify
 from flask import request
-
+from worker import make_celery
 app = Flask(__name__)
+app.config.update(
+    CELERY_BROKER_URL='redis://redis:6379',
+    CELERY_RESULT_BACKEND='redis://redis:6379'
+)
+celery = make_celery(app)
+
+from tasks import tasks
 
 
 @app.route('/')
 def application_status():
     return 'Application Up'
+
+
+@app.route('/ping')
+def ping():
+    result = tasks.ping.delay()
+    result.wait()
+    return result.get()
 
 
 @app.route('/mine', methods=['GET', 'POST'])
@@ -44,11 +56,13 @@ def mine():
 
     if request.method == 'POST':
         data = request.get_json()
-        task = celery.send_task('mine', kwargs=data)
+        task = tasks.mine.delay(data)
         return task.id
     if request.method == 'GET':
         job_id = request.args.get('job_id')
         res = celery.AsyncResult(job_id)
+
+        print(res.result)
         if res.state == 'PENDING':
             return res.state
         elif res.state == 'EXTRACTING':
