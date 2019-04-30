@@ -68,7 +68,7 @@ def mine():
 
     if request.method == 'POST':
         data = request.get_json()
-        print(data)
+        print(SELENIUM_WEBDRIVER_HOST)
         task = tasks.mine.delay(data)
         return task.id
     if request.method == 'GET':
