@@ -10,4 +10,4 @@ RUN pip install -r requirements.txt
 
 COPY . /code/
 EXPOSE 5000
-CMD [￿"sh", ￿"deploy.sh"]
+CMD [￿￿"deploy.sh"]

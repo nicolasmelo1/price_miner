@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/sh
 
 celery -A app.celery worker --detach
 flask run --host=0.0.0.0
