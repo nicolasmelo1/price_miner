@@ -3,5 +3,6 @@ build:
     web: Dockerfile
   config:
     FLASK_ENV: production
+    SELENIUM_WEBDRIVER_HOST: http://price-miner-selenium.herokuapp.com/wd/hub
 run:
   web: bash -c "celery -A app.celery worker --detach && flask run --host=0.0.0.0 --port=${PORT}"
