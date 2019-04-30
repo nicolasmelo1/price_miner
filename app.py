@@ -74,7 +74,6 @@ def mine():
         job_id = request.args.get('job_id')
         res = celery.AsyncResult(job_id)
 
-        print(res.result)
         if res.state == 'PENDING':
             return res.state
         elif res.state == 'EXTRACTING':

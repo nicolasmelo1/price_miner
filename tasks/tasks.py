@@ -70,6 +70,7 @@ def mine(self, data):
                 pass
         item_data = {
             "title": soup.title.text,
+            "data": {}
         }
         for to_extract in response_data:
             item_data['data'][to_extract['name']] = soup.find(to_extract['container_tag'],
