@@ -73,6 +73,8 @@ def mine():
     if request.method == 'GET':
         job_id = request.args.get('job_id')
         res = celery.AsyncResult(job_id)
+        print(CELERY_BROKER_URL)
+        print(CELERY_RESULT_BACKEND)
         print(res.__dict__)
         print(res)
         if res.state == 'PENDING':
