@@ -1,3 +1,5 @@
 build:
   docker:
     web: Dockerfile
+run:
+  web: bash -c "celery -A app.celery worker --detach && flask run"
