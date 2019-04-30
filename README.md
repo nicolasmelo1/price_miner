@@ -46,7 +46,7 @@ Example:
 	  "name": "price",
 	  "container_tag": "div",
 	  "container_class": "price-template",
-	  ￿￿"to_get": "text"
+	  "to_get": "text"
     }],
 	"sleep_time": 20
 }

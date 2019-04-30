@@ -1,7 +1,18 @@
 from flask import Flask, jsonify
 from flask import request
 from worker import make_celery
+import os
 app = Flask(__name__)
+
+if os.environ.get('FLASK_ENV') == 'development':
+    CELERY_BROKER_URL = 'redis://redis:6379'
+    CELERY_RESULT_BACKEND = 'redis://redis:6379'
+    SELENIUM_WEBDRIVER_HOST = 'http://seleniumhub:4444/wd/hub'
+else:
+    CELERY_BROKER_URL = ''
+    CELERY_RESULT_BACKEND = ''
+    SELENIUM_WEBDRIVER_HOST = ''
+
 app.config.update(
     CELERY_BROKER_URL='redis://redis:6379',
     CELERY_RESULT_BACKEND='redis://redis:6379'

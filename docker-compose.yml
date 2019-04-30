@@ -1,16 +1,9 @@
 version: '3.3'
 services:
   seleniumhub:
-    image: selenium/hub:3.12.0-cobalt
+    build: selenium
     ports:
       - "4444:4444"
-  chrome:
-    image: selenium/node-chrome:3.14.0-arsenic
-    depends_on:
-      - seleniumhub
-    environment:
-      - HUB_HOST=seleniumhub
-      - HUB_PORT=4444
   db:
     image: postgres
     ports:
@@ -35,7 +28,6 @@ services:
       - FLASK_DEBUG=1
     depends_on:
       - db
-      - seleniumhub
-      - chrome
       - redis
+      - seleniumhub
 

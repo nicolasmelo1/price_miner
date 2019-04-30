@@ -1,0 +1,8 @@
+build:
+  docker:
+    selenium: selenium/Dockerfile
+    web: Dockerfile
+  config:
+    FLASK_APP=./app.py
+    FLASK_ENV=production
+    FLASK_DEBUG=0
