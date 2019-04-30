@@ -9,9 +9,9 @@ if os.environ.get('FLASK_ENV') == 'development':
     CELERY_RESULT_BACKEND = 'redis://redis:6379'
     SELENIUM_WEBDRIVER_HOST = 'http://seleniumhub:4444/wd/hub'
 else:
-    CELERY_BROKER_URL = ''
-    CELERY_RESULT_BACKEND = ''
-    SELENIUM_WEBDRIVER_HOST = ''
+    CELERY_BROKER_URL = os.environ.get("REDIS_URL")
+    CELERY_RESULT_BACKEND = os.environ.get("REDIS_URL")
+    SELENIUM_WEBDRIVER_HOST = 'https://price-miner-selenium.herokuapp.com/wd/hub'
 
 app.config.update(
     CELERY_BROKER_URL='redis://redis:6379',
@@ -91,4 +91,4 @@ def mine():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0')
+    app.run(host='0.0.0.0', port=os.environ.get('PORT', 5000))

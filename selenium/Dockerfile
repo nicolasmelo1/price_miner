@@ -7,6 +7,8 @@ LABEL authors=SeleniumHQ
 
 USER seluser
 
+ENV HUB_PORT $PORT
+
 #====================================
 # Scripts to run Selenium Standalone
 #====================================

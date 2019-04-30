@@ -1,4 +1,4 @@
-from app import celery
+from app import celery, SELENIUM_WEBDRIVER_HOST
 import time
 from bs4 import BeautifulSoup
 from selenium import webdriver
