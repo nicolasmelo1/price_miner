@@ -19,6 +19,7 @@ app.config.update(
 )
 celery = make_celery(app)
 
+
 from tasks import tasks
 
 
