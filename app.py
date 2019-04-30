@@ -68,15 +68,12 @@ def mine():
 
     if request.method == 'POST':
         data = request.get_json()
-        task = tasks.mine.delay(data)
+        task = tasks.mine.apply_async(data)
         return task.id
     if request.method == 'GET':
         job_id = request.args.get('job_id')
         res = celery.AsyncResult(job_id)
-        print(CELERY_BROKER_URL)
-        print(CELERY_RESULT_BACKEND)
-        print(res.__dict__)
-        print(res)
+        print(res.state)
         if res.state == 'PENDING':
             return res.state
         elif res.state == 'EXTRACTING':
