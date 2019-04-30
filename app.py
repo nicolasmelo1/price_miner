@@ -14,8 +14,8 @@ else:
     SELENIUM_WEBDRIVER_HOST = 'https://price-miner-selenium.herokuapp.com/wd/hub'
 
 app.config.update(
-    CELERY_BROKER_URL='redis://redis:6379',
-    CELERY_RESULT_BACKEND='redis://redis:6379'
+    CELERY_BROKER_URL=CELERY_BROKER_URL,
+    CELERY_RESULT_BACKEND=CELERY_RESULT_BACKEND
 )
 celery = make_celery(app)
 
