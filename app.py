@@ -2,6 +2,8 @@ from flask import Flask, jsonify
 from flask import request
 from worker import make_celery
 import os
+
+
 app = Flask(__name__)
 
 if os.environ.get('FLASK_ENV') == 'development':
@@ -11,7 +13,7 @@ if os.environ.get('FLASK_ENV') == 'development':
 else:
     CELERY_BROKER_URL = os.environ.get("REDIS_URL")
     CELERY_RESULT_BACKEND = os.environ.get("REDIS_URL")
-    SELENIUM_WEBDRIVER_HOST = "http://price-miner-selenium.herokuapp.com/wd/hub"
+    SELENIUM_WEBDRIVER_HOST = "price-miner-selenium.herokuapp.com/wd/hub"
 
 app.config.update(
     CELERY_BROKER_URL=CELERY_BROKER_URL,
@@ -74,6 +76,8 @@ def mine():
     if request.method == 'GET':
         job_id = request.args.get('job_id')
         res = celery.AsyncResult(job_id)
+
+        print(res.result)
         if res.state == 'PENDING':
             return res.state
         elif res.state == 'EXTRACTING':
@@ -83,10 +87,13 @@ def mine():
                 data=res.result
             )
         else:
-            return jsonify(
-                task_id=res.id,
-                content=res.result
-            )
+            try:
+                return jsonify(
+                    task_id=res.id,
+                    content=res.result
+                )
+            except:
+                return res.result
 
 
 if __name__ == '__main__':

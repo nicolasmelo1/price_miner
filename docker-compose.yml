@@ -2,6 +2,8 @@ version: '3.3'
 services:
   seleniumhub:
     build: selenium
+    environment:
+      - PORT=4444
     ports:
       - "4444:4444"
   db:
@@ -10,9 +12,20 @@ services:
       - "5432:5432"
   redis:
     image: redis
+  worker:
+    build: .
+    command: celery -A app.celery worker
+    volumes:
+      - .:/code
+    environment:
+      - FLASK_APP=./app.py
+      - FLASK_ENV=development
+      - FLASK_DEBUG=1
+    depends_on:
+      - redis
   web:
     build: .
-    command: bash -c "rm -rf celeryd.pid && celery -A app.celery worker -l INFO --detach && flask run --host=0.0.0.0"
+    command: flask run --host=0.0.0.0
     ports:
       - "5000:5000"
     environment:

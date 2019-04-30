@@ -37,7 +37,7 @@ def mine(self, data, *args, **kwargs):
     sleep_time = data.get('sleep_time', 5)
     max_number = 5 if max_number > 85 else max_number
     sleep_time = 5 if sleep_time > 60 else sleep_time
-    driver = webdriver.Remote(command_executor=SELENIUM_WEBDRIVER_HOST, desired_capabilities=DesiredCapabilities.CHROME)
+    driver = webdriver.Remote(command_executor=SELENIUM_WEBDRIVER_HOST, desired_capabilities=DesiredCapabilities.FIREFOX)
     links = list()
     content = list()
     while True:
