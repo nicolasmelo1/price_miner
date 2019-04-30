@@ -68,7 +68,7 @@ def mine():
 
     if request.method == 'POST':
         data = request.get_json()
-        task = tasks.mine.apply_async(data)
+        task = tasks.mine.delay(data)
         return task.id
     if request.method == 'GET':
         job_id = request.args.get('job_id')
