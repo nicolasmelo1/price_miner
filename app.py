@@ -11,7 +11,7 @@ if os.environ.get('FLASK_ENV') == 'development':
 else:
     CELERY_BROKER_URL = os.environ.get("REDIS_URL")
     CELERY_RESULT_BACKEND = os.environ.get("REDIS_URL")
-    SELENIUM_WEBDRIVER_HOST = os.environ.get("SELENIUM_WEBDRIVER_HOST")
+    SELENIUM_WEBDRIVER_HOST = "http://price-miner-selenium.herokuapp.com/wd/hub"
 
 app.config.update(
     CELERY_BROKER_URL=CELERY_BROKER_URL,
