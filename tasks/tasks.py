@@ -25,7 +25,7 @@ def ping(self, **kwargs):
 
 
 @celery.task(name='mine', bind=True)
-def mine(self, data):
+def mine(self, data, *args, **kwargs):
     print(data)
     url = data['url']
     max_number = data['max_number']
