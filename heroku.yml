@@ -4,4 +4,4 @@ build:
   config:
     FLASK_ENV: production
 run:
-  web: bash -c "celery -A app.celery worker --detach && gunicorn app:app --bind 0.0.0.0:${PORT}"
+  web: bash -c "celery -A app.celery worker --detach && gunicorn app:app --workers 3 --bind 0.0.0.0:${PORT}"
