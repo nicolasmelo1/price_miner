@@ -97,6 +97,7 @@ def mine():
             try:
                 return jsonify(
                     task_id=res.id,
+                    status=res.state,
                     content=res.result
                 )
             except:

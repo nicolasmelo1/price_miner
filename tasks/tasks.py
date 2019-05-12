@@ -45,6 +45,7 @@ def mine(self, data, *args, **kwargs):
         'content': [],
         'error': '',
     }
+
     while True:
         try:
             driver.get(url)
@@ -88,13 +89,33 @@ def mine(self, data, *args, **kwargs):
                 "title": soup.title.text,
                 "data": {}
             }
+            set_loop_as_error = False
             for to_extract in response_data:
-                item_data['data'][to_extract['name']] = soup.find(to_extract['container_tag'],
-                                                 class_=to_extract['container_class']).text \
-                                                    if 'to_get' not in to_extract or to_extract['to_get'] == 'text' else \
-                                                 soup.find(to_extract['container_tag'],
-                                                 class_=to_extract['container_class'][to_extract['to_get']])
-            response['content'].append(item_data)
+                default_to_extract = soup.find(to_extract['container_tag'], class_=to_extract['container_class'])
+                if default_to_extract:
+                    if 'to_get' not in to_extract or to_extract['to_get'] == 'text':
+                        item_data['data'][to_extract['name']] = default_to_extract.text
+                    else:
+                        item_data['data'][to_extract['name']] = default_to_extract[to_extract['to_get']]
+                elif to_extract['required']:
+                    set_loop_as_error = True
+                    break
+                else:
+                    item_data['data'][to_extract['name']] = ''
+            if set_loop_as_error:
+                next_links_container_content = soup.find(similar_products_container_tag,
+                                                         class_=similar_products_container_class)
+                url, links = find_next_url(next_links_container_content, links, main_url)
+                self.update_state(state='EXTRACTING', meta={
+                    'job_percent_completed': len(response['content']) / max_number,
+                    'job_current_status':
+                        'One or more required data could not be extracted',
+                    'current_url': url,
+                    'Errors': None
+                })
+                continue
+            else:
+                response['content'].append(item_data)
             next_links_container_content = soup.find(similar_products_container_tag,
                                                      class_=similar_products_container_class)
             if len(response['content']) == max_number:

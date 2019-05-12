@@ -25,7 +25,7 @@ services:
       - redis
   web:
     build: .
-    command: flask run --host=0.0.0.0
+    command: start price_miner
     ports:
       - "5000:5000"
     environment:
