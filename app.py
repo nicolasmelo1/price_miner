@@ -51,9 +51,12 @@ def mine():
     similar_products_container_class (String): The class of the container for similar products.
     price_container_tag (String): The container to get products price (div, ul, etc.).
     price_container_class (String): The class of the container to get products price.
-    OPTIONAL item_types (List[String]): Tells what string the title can contain. Ex.: If you only
+    OPTIONAL whitelist (List[String]): Tells what string the title can contain. Ex.: If you only
                                         want to retrieve notebooks you would send a list ['notebook']
                                         if you want monitors also would be ['notebook', 'monitor']
+    OPTIONAL blacklist (List[String]): Tells what string the title CANNOT contain. Ex.: If you DON￿'T
+                                        want to retrieve notebooks you would send a list ['notebook']
+                                        if you DON￿'T want monitors also, it would be ['notebook', 'monitor']
     OPTIONAL sleep_time (Integer): Max time to sleep until retrieve data. Default: 5
     OPTIONAL main_url (String): The main url of the website.
     :return: Celery task id
@@ -69,10 +72,14 @@ def mine():
     """
 
     if request.method == 'POST':
+        required_fields = ['url', 'max_number', 'similar_products_container_tag',
+                          'similar_products_container_class', 'data']
         data = request.get_json()
-        print(SELENIUM_WEBDRIVER_HOST)
-        task = tasks.mine.delay(data)
-        return task.id
+        if [i for i in required_fields if i in list(data.keys())] == required_fields:
+            task = tasks.mine.delay(data)
+            return task.id
+        else:
+            return 'Parece que a informação passada não está no formato certo'
     if request.method == 'GET':
         job_id = request.args.get('job_id')
         res = celery.AsyncResult(job_id)
