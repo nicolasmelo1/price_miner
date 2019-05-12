@@ -4,4 +4,4 @@ build:
   config:
     FLASK_ENV: production
 run:
-  web: bash -c "celery -A app.celery worker --detach && flask run --host=0.0.0.0 --port=${PORT}"
+  web: bash -c "celery -A app.celery worker --detach && gunicorn app:app --bind 0.0.0.0:${PORT}"
