@@ -30,6 +30,16 @@ def application_status():
     return 'Application Up'
 
 
+@app.route('/check')
+def check_queue():
+    i = celery.control.inspect()
+    active = i.active()
+    scheduled = i.scheduled()
+    print(active)
+    print(scheduled)
+    return 'tesste'
+
+
 @app.route('/ping')
 def ping():
     result = tasks.ping.delay()

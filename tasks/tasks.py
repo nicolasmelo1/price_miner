@@ -7,15 +7,18 @@ from random import randint
 
 
 def find_next_url(next_links_container_content, links, main_url):
-    possible_next_links = [a['href'] for a in next_links_container_content.find_all("a", href=True)]
-    if main_url:
-        next_link = main_url + possible_next_links[randint(0, len(possible_next_links) - 1)]
-        links.append(next_link)
-        url = next_link
+    if next_links_container_content:
+        possible_next_links = [a['href'] for a in next_links_container_content.find_all("a", href=True)]
+        if main_url:
+            next_link = main_url + possible_next_links[randint(0, len(possible_next_links) - 1)]
+            links.append(next_link)
+            url = next_link
+        else:
+            next_link = possible_next_links[randint(0, len(possible_next_links) - 1)]
+            links.append(next_link)
+            url = next_link
     else:
-        next_link = possible_next_links[randint(0, len(possible_next_links) - 1)]
-        links.append(next_link)
-        url = next_link
+        url = links[randint(0, len(links) - 1)]
     return url, links
 
 
