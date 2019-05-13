@@ -1,5 +1,5 @@
 from argparse import ArgumentParser
-from extractor.config import PRICE_MINER_HOST, BODY_REQUEST
+from config import PRICE_MINER_HOST, BODY_REQUEST
 import requests
 import time
 import pandas as pd

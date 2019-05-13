@@ -46,7 +46,6 @@ def mine(self, data, *args, **kwargs):
     response = {
         'last_url': '',
         'content': [],
-        'error': '',
     }
 
     while True:
@@ -127,7 +126,7 @@ def mine(self, data, *args, **kwargs):
             url, links = find_next_url(next_links_container_content, links, main_url)
         except Exception as e:
             response['last_url'] = url
-            response['error'] = str(e)
+            print(e)
             driver.quit()
             break
     return response
