@@ -86,6 +86,11 @@ def mine():
                           'similar_products_container_class', 'data']
         data = request.get_json()
         if [i for i in required_fields if i in list(data.keys())] == required_fields:
+            i = celery.control.inspect()
+            active_tasks = i.active()
+            active_mine_tasks = [item['name'] for item in list(active_tasks.values())[0]]
+            if active_mine_tasks.count('mine') > 0:
+                return 'tasks already running, try again later'
             task = tasks.mine.delay(data)
             return task.id
         else:
