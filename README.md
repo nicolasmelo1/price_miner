@@ -42,7 +42,7 @@ For `POST` requests send a **JSON** with the following parameters
     + **container_tag** (*String*): The tag of the content you want to retrieve
     + **container_class** (*String*): The class of the content you want to retrieve
     + **to_get** (*String*): tells white type of content to retrieve, if **text** is passed, it retrieves the 
-    textContent of the tag. Defaults to: `text￿￿`
+    textContent of the tag. Defaults to: `text`
 + *OPTIONAL* **blacklist** (*List[String]*): Tells what string the title cannot contain. Ex.: If you don't
                                     want to retrieve notebooks you would send a list `['notebook']`
                                     if you also don't want monitors also it would be `['notebook', 'monitor']`
