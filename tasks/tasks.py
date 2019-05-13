@@ -2,7 +2,6 @@ from app import celery, SELENIUM_WEBDRIVER_HOST
 import time
 from bs4 import BeautifulSoup
 from selenium import webdriver
-from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from random import randint
 
@@ -125,11 +124,6 @@ def mine(self, data, *args, **kwargs):
                 'Errors': None
             })
             url, links = find_next_url(next_links_container_content, links, main_url)
-        except WebDriverException as wde:
-            driver.quit()
-            print(wde)
-            driver = webdriver.Remote(command_executor=SELENIUM_WEBDRIVER_HOST,
-                                      desired_capabilities=DesiredCapabilities.FIREFOX)
         except Exception as e:
             response['last_url'] = url
             print(e)
