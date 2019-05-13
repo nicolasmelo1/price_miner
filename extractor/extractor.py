@@ -2,33 +2,36 @@ from argparse import ArgumentParser
 import requests
 import time
 
+price_miner_host = "https://price-miner.herokuapp.com"
+
 body_request = {
-            "url": "https://www.magazineluiza.com.br/smartphone-samsung-galaxy-j4-core-tela-infinita-de-6-camera-frontal-de-5mp-android-go-8-1-preto-/p/djkg14gfcc/te/sj4c/",
-            "max_number": 1,
-            "similar_products_container_tag": "div",
-            "similar_products_container_class": "slick-track",
-            "data": [{
-              "name": "price",
-              "container_tag": "div",
-              "container_class": "price-template",
-              "to_get": "text",
-              "required": True
-            }],
-            "blacklist": [],
-            "sleep_time": 20
-        }
+    "url": "https://www.magazineluiza.com.br/iphone-8-apple-64gb-dourado-4g-tela-47-retina-cam-12mp-selfie-7mp-ios-11/p/155542800/te/teip/",
+    "max_number": 30,
+    "similar_products_container_tag": "ul",
+    "similar_products_container_class": "showcase showcase__five-product js-carousel-showcase-wvav slick-initialized slick-slider",
+    "data": [{
+      "name": "price",
+      "container_tag": "div",
+      "container_class": "price-template",
+      "to_get": "text",
+      "required": True
+    }],
+    "blacklist": [],
+    "whitelist": ["smartphone", "samsung", "xiaomi", "android", "iphone", "apple"],
+    "sleep_time": 20
+}
 
 all_data = list()
 
 
-def extract(number_of_items=3):
+def extract(number_of_items=1):
     while True:
-        response = requests.post('http://localhost:5000/mine', json=body_request)
+        response = requests.post(price_miner_host + '/mine', json=body_request)
         if response.content != 'tasks already running, try again later':
             task_id = response.content
-            request = requests.get('http://localhost:5000/mine', params={'job_id': task_id.decode("utf-8")})
+            request = requests.get(price_miner_host + '/mine', params={'job_id': task_id.decode("utf-8")})
             while 'content' not in request.json():
-                request = requests.get('http://localhost:5000/mine', params={'job_id': task_id.decode("utf-8")})
+                request = requests.get(price_miner_host + '/mine', params={'job_id': task_id.decode("utf-8")})
                 print(request.json())
                 time.sleep(20)
             data = request.json()
