@@ -30,16 +30,6 @@ def application_status():
     return 'Application Up'
 
 
-@app.route('/check')
-def check_queue():
-    i = celery.control.inspect()
-    active = i.active()
-    scheduled = i.scheduled()
-    print(active)
-    print(scheduled)
-    return 'tesste'
-
-
 @app.route('/ping')
 def ping():
     result = tasks.ping.delay()
@@ -52,7 +42,7 @@ def mine():
     """
     Sends async run to celery to get data from e-commerce websites.
 
-    If POST:
+    If POST: (If tasks are running send message)
     JSON - Parameters
     -----------------------
     url (String): Initial url from e-commerce to extract data from.
