@@ -54,10 +54,10 @@ def mine(self, data, *args, **kwargs):
             driver.get(url)
             time.sleep(sleep_time)
             soup = BeautifulSoup(driver.page_source, "lxml")
+            next_links_container_content = soup.find(similar_products_container_tag,
+                                                     class_=similar_products_container_class)
+            url, links = find_next_url(next_links_container_content, links, main_url)
             if any([d for d in response['content'] if soup.title.text in d.get('title', None)]):
-                next_links_container_content = soup.find(similar_products_container_tag,
-                                                         class_=similar_products_container_class)
-                url, links = find_next_url(next_links_container_content, links, main_url)
                 self.update_state(state='EXTRACTING', meta={
                     'job_percent_completed': len(response['content'])/max_number,
                     'job_current_status': 'Title already exists or price container doesn\'t exist for url',
@@ -66,8 +66,7 @@ def mine(self, data, *args, **kwargs):
                 })
                 continue
             elif whitelist or blacklist:
-                if not any(item.lower() in soup.title.text.lower() for item in whitelist):
-                    url = links[randint(0, len(links) - 1)]
+                if whitelist and not any([item.lower() in soup.title.text.lower() for item in whitelist]):
                     self.update_state(state='EXTRACTING', meta={
                         'job_percent_completed': len(response['content']) / max_number,
                         'job_current_status':
@@ -76,8 +75,7 @@ def mine(self, data, *args, **kwargs):
                         'Errors': None
                     })
                     continue
-                elif any(item.lower() in soup.title.text.lower() for item in blacklist):
-                    url = links[randint(0, len(links) - 1)]
+                if blacklist and any([item.lower() in soup.title.text.lower() for item in blacklist]):
                     self.update_state(state='EXTRACTING', meta={
                         'job_percent_completed': len(response['content']) / max_number,
                         'job_current_status':
@@ -86,8 +84,6 @@ def mine(self, data, *args, **kwargs):
                         'Errors': None
                     })
                     continue
-                else:
-                    pass
             item_data = {
                 "title": soup.title.text,
                 "data": {}
@@ -106,9 +102,6 @@ def mine(self, data, *args, **kwargs):
                 else:
                     item_data['data'][to_extract['name']] = ''
             if set_loop_as_error:
-                next_links_container_content = soup.find(similar_products_container_tag,
-                                                         class_=similar_products_container_class)
-                url, links = find_next_url(next_links_container_content, links, main_url)
                 self.update_state(state='EXTRACTING', meta={
                     'job_percent_completed': len(response['content']) / max_number,
                     'job_current_status':

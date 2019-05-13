@@ -89,9 +89,11 @@ def mine():
         job_id = request.args.get('job_id')
         res = celery.AsyncResult(job_id)
 
-        print(res.result)
         if res.state == 'PENDING':
-            return res.state
+            return jsonify(
+                task_id=res.id,
+                status=res.state,
+            )
         elif res.state == 'EXTRACTING':
             return jsonify(
                 task_id=res.id,
@@ -99,14 +101,11 @@ def mine():
                 data=res.result
             )
         else:
-            try:
-                return jsonify(
-                    task_id=res.id,
-                    status=res.state,
-                    content=res.result
-                )
-            except:
-                return res.result
+            return jsonify(
+                task_id=res.id,
+                status=res.state,
+                content=res.result
+            )
 
 
 if __name__ == '__main__':
