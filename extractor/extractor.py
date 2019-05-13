@@ -1,3 +1,4 @@
+from argparse import ArgumentParser
 import requests
 import time
 
@@ -34,10 +35,16 @@ def extract(number_of_items=3):
             all_data.extend(data['content']['content'])
             body_request['url'] = data['content']['last_url']
             body_request['blacklist'] = [item['title'] for item in all_data]
-            if len(all_data) == number_of_items:
+            if len(all_data) >= number_of_items:
                 print(all_data)
                 break
 
 
 if __name__ == '__main__':
-    extract()
+    parser = ArgumentParser()
+    parser.add_argument('--num', required=False, type=int, help='number of items to extract')
+    args = parser.parse_args()
+    if args:
+        extract(args.num)
+    else:
+        extract()
