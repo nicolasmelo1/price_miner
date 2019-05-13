@@ -12,7 +12,7 @@ Most of the analysis  and studies made for studying prices on e-commerces are qu
 researchers can have a better understading of the prices on e-commerces and how is it managed and decided based on quantitative data.
 
 ### Why not scrapy?
-Scrapy is a webcrawler framework written in python that is fast and reliable for crawling websites. The problem is that it doesn￿'t work well on some
+Scrapy is a webcrawler framework written in python that is fast and reliable for crawling websites. The problem is that it doesn't work well on some
 javascript based websites like some of the biggest e-commerces out there. So the idea here is to make it easy and possible to crawl e-commerces that 
 have javascript generated content.
 
@@ -41,11 +41,11 @@ For `POST` requests send a **JSON** with the following parameters
     + **name** (*String*): The key that will hold the result
     + **container_tag** (*String*): The tag of the content you want to retrieve
     + **container_class** (*String*): The class of the content you want to retrieve
-    + **to_get** (*String*): tells white type of content to retrieve, if ￿**text** is passed, it retrieves the 
-    textContent of the tag. Defaults to: ￿￿`text
-+ *OPTIONAL* **blacklist** (*List[String]*): Tells what string the title cannot contain. Ex.: If you don￿'t
+    + **to_get** (*String*): tells white type of content to retrieve, if **text** is passed, it retrieves the 
+    textContent of the tag. Defaults to: `text￿￿`
++ *OPTIONAL* **blacklist** (*List[String]*): Tells what string the title cannot contain. Ex.: If you don't
                                     want to retrieve notebooks you would send a list `['notebook']`
-                                    if you also don￿'t want monitors also it would be `['notebook', 'monitor']`
+                                    if you also don't want monitors also it would be `['notebook', 'monitor']`
 + *OPTIONAL* **whitelist** (*List[String]*): Tells what string the title can contain. Ex.: If you only
                                     want to retrieve notebooks you would send a list `['notebook']`
                                     if you want monitors also it would be `['notebook', 'monitor']`
@@ -56,7 +56,7 @@ complete the path with the main url of the website.
 #### Response
 It can return a Celery task id used to get the results from this call, or a message saying that a celery task is already running.
 
-Since it￿'s a really small server, we need to limit the tasks running in the background.
+Since it's a really small server, we need to limit the tasks running in the background.
 
 
 Example:
@@ -135,9 +135,9 @@ IMPORTANT: Make sure you change the production SELENIUM_WEBDRIVER_HOST configura
 ## Known Issues
 + Add a small test case
 + For being selenium based it is not performatic, it would be nice to change that.
-+ Missing serializer for post request, it￿￿'s created really badly
++ Missing serializer for post request, it's created really badly
 + Missing nginx configuration
-+ Doesn￿￿'t reload when a change is made on docker-compose so it needs to be rebuilt everytime
++ Doesn't reload when a change is made on docker-compose so it needs to be rebuilt everytime
 + A nice and user friendly front-end for the common user
 
 ## Contribute

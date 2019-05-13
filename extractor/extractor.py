@@ -2,6 +2,7 @@ from argparse import ArgumentParser
 from extractor.config import PRICE_MINER_HOST, BODY_REQUEST
 import requests
 import time
+import pandas as pd
 
 all_data = list()
 
@@ -21,7 +22,13 @@ def extract(number_of_items=1):
             BODY_REQUEST['url'] = data['content']['last_url']
             BODY_REQUEST['blacklist'] = [item['title'] for item in all_data]
             if len(all_data) >= number_of_items:
-                print(all_data)
+                data_holder = list()
+                for item in all_data:
+                    temp = {'title': item['title']}
+                    for key, value in item['data'].items():
+                        temp[key] = value
+                    data_holder.append(temp)
+                pd.DataFrame.from_dict(data, orient='index', columns=['title', 'price']).to_csv('magalu_data.csv')
                 break
 
 
