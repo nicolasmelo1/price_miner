@@ -113,12 +113,17 @@ def mine(self, data, *args, **kwargs):
 
         while not handle_request_response.ready():
             time.sleep(5)
-        url, links, response = handle_request_response.result
-        self.update_state(state='EXTRACTING', meta={
-            'job_percent_completed': len(response['content'])/max_number,
-            'current_url': url,
-            'Errors': None
-        })
+
+        if handle_request_response.state == 'SUCCESS':
+            url, links, response = handle_request_response.result
+            self.update_state(state='EXTRACTING', meta={
+                'job_percent_completed': len(response['content'])/max_number,
+                'current_url': url,
+                'Errors': None
+            })
+        elif handle_request_response.state == 'FAILURE':
+            response['last_url'] = url
+            break
 
         if len(response['content']) == max_number:
             response['last_url'] = url
