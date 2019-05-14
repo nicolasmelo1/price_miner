@@ -40,12 +40,18 @@ def handle_request(self, url, max_number, similar_products_container_tag, simila
                                                  class_=similar_products_container_class)
         url, links = find_next_url(next_links_container_content, links, main_url)
         if any([d for d in response['content'] if soup.title.text in d.get('title', None)]):
-            print('Title already exists or price container doesn\'t exist for url')
+            driver.quit()
+            return url, links, response, 'Title already exists or price container doesn\'t exist for url'
         elif whitelist or blacklist:
             if whitelist and not any([item.lower() in soup.title.text.lower() for item in whitelist]):
-                print('The item title does not contain one of the following types: %s' % ','.join(whitelist))
+                driver.quit()
+                return url, links, response, 'The item title does not contain one of the following types: %s' \
+                                                   % ','.join(whitelist)
             if blacklist and any([item.lower() in soup.title.text.lower() for item in blacklist]):
-                print('The item title does contain one of the following types: %s' % ','.join(blacklist))
+                driver.quit()
+                return url, links, response, 'The item title does contain one of the following types: %s' \
+                       % ','.join(blacklist)
+
         item_data = {
             "title": soup.title.text,
             "data": {}
@@ -64,11 +70,12 @@ def handle_request(self, url, max_number, similar_products_container_tag, simila
             else:
                 item_data['data'][to_extract['name']] = ''
         if set_loop_as_error:
-            print('One or more required data could not be extracted')
+            driver.quit()
+            return url, links, response, 'One or more required data could not be extracted'
         else:
             response['content'].append(item_data)
-        driver.quit()
-        return url, links, response
+            driver.quit()
+            return url, links, response, 'item extracted successfully'
     except Exception as e:
         driver.quit()
         raise self.retry(countdown=60, exc=e)
@@ -108,10 +115,11 @@ def mine(self, data, *args, **kwargs):
             time.sleep(5)
 
         if handle_request_response.state == 'SUCCESS':
-            url, links, response = handle_request_response.result
+            url, links, response, message = handle_request_response.result
             self.update_state(state='EXTRACTING', meta={
                 'job_percent_completed': len(response['content'])/max_number,
                 'current_url': url,
+                'message': message,
                 'Errors': None
             })
         elif handle_request_response.state == 'FAILURE':
