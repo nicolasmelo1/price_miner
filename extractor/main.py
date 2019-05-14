@@ -32,6 +32,7 @@ def extract(number_of_items=1):
                 pd.DataFrame.from_dict(data, orient='index', columns=['title', 'price']).to_csv('magalu_data.csv')
                 break
 
+
 if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument('--num', required=False, type=int, help='number of items to extract')

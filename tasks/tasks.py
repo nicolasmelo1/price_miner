@@ -136,6 +136,8 @@ def mine(self, data, *args, **kwargs):
         except Exception as e:
             response['last_url'] = url
             print(e)
-            driver.quit()
-            break
+            time.sleep(50)
+            driver = webdriver.Remote(command_executor=SELENIUM_WEBDRIVER_HOST,
+                                      desired_capabilities=DesiredCapabilities.FIREFOX)
+            continue
     return response
