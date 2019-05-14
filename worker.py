@@ -6,7 +6,7 @@ def make_celery(app):
         app.import_name,
         backend=app.config['CELERY_RESULT_BACKEND'],
         broker=app.config['CELERY_BROKER_URL'],
-        redis_max_connections=10
+        redis_max_connections=15
     )
     celery.conf.update(app.config)
     return celery
