@@ -30,54 +30,51 @@ def ping(self, **kwargs):
 @celery.task(name='handle_request', bind=True, max_retries=5)
 def handle_request(self, url, max_number, similar_products_container_tag, similar_products_container_class,
                    response, response_data, whitelist, blacklist, main_url, sleep_time, links, *args, **kwargs):
-    try:
-        driver = webdriver.Remote(command_executor=SELENIUM_WEBDRIVER_HOST,
-                                  desired_capabilities=DesiredCapabilities.FIREFOX)
-        driver.get(url)
-        time.sleep(sleep_time)
-        soup = BeautifulSoup(driver.page_source, "lxml")
-        next_links_container_content = soup.find(similar_products_container_tag,
-                                                 class_=similar_products_container_class)
-        url, links = find_next_url(next_links_container_content, links, main_url)
-        if any([d for d in response['content'] if soup.title.text in d.get('title', None)]):
+    driver = webdriver.Remote(command_executor=SELENIUM_WEBDRIVER_HOST,
+                              desired_capabilities=DesiredCapabilities.FIREFOX)
+    driver.get(url)
+    time.sleep(sleep_time)
+    soup = BeautifulSoup(driver.page_source, "lxml")
+    next_links_container_content = soup.find(similar_products_container_tag,
+                                             class_=similar_products_container_class)
+    url, links = find_next_url(next_links_container_content, links, main_url)
+    if any([d for d in response['content'] if soup.title.text in d.get('title', None)]):
+        driver.quit()
+        return url, links, response, 'Title already exists or price container doesn\'t exist for url'
+    elif whitelist or blacklist:
+        if whitelist and not any([item.lower() in soup.title.text.lower() for item in whitelist]):
             driver.quit()
-            return url, links, response, 'Title already exists or price container doesn\'t exist for url'
-        elif whitelist or blacklist:
-            if whitelist and not any([item.lower() in soup.title.text.lower() for item in whitelist]):
-                driver.quit()
-                return url, links, response, 'The item title does not contain one of the following types: %s' \
-                                                   % ','.join(whitelist)
-            if blacklist and any([item.lower() in soup.title.text.lower() for item in blacklist]):
-                driver.quit()
-                return url, links, response, 'The item title does contain one of the following types: %s' \
-                       % ','.join(blacklist)
+            return url, links, response, 'The item title does not contain one of the following types: %s' \
+                                               % ','.join(whitelist)
+        if blacklist and any([item.lower() in soup.title.text.lower() for item in blacklist]):
+            driver.quit()
+            return url, links, response, 'The item title does contain one of the following types: %s' \
+                   % ','.join(blacklist)
 
-        item_data = {
-            "title": soup.title.text,
-            "data": {}
-        }
-        set_loop_as_error = False
-        for to_extract in response_data:
-            default_to_extract = soup.find(to_extract['container_tag'], class_=to_extract['container_class'])
-            if default_to_extract:
-                if 'to_get' not in to_extract or to_extract['to_get'] == 'text':
-                    item_data['data'][to_extract['name']] = default_to_extract.text
-                else:
-                    item_data['data'][to_extract['name']] = default_to_extract[to_extract['to_get']]
-            elif to_extract['required']:
-                set_loop_as_error = True
-                break
+    item_data = {
+        "title": soup.title.text,
+        "data": {}
+    }
+    set_loop_as_error = False
+    for to_extract in response_data:
+        default_to_extract = soup.find(to_extract['container_tag'], class_=to_extract['container_class'])
+        if default_to_extract:
+            if 'to_get' not in to_extract or to_extract['to_get'] == 'text':
+                item_data['data'][to_extract['name']] = default_to_extract.text
             else:
-                item_data['data'][to_extract['name']] = ''
-        if set_loop_as_error:
-            driver.quit()
-            return url, links, response, 'One or more required data could not be extracted'
+                item_data['data'][to_extract['name']] = default_to_extract[to_extract['to_get']]
+        elif to_extract['required']:
+            set_loop_as_error = True
+            break
         else:
-            driver.quit()
-            response['content'].append(item_data)
-            return url, links, response, 'item extracted successfully'
-    except Exception as e:
-        raise self.retry(countdown=20, exc=e)
+            item_data['data'][to_extract['name']] = ''
+    if set_loop_as_error:
+        driver.quit()
+        return url, links, response, 'One or more required data could not be extracted'
+    else:
+        driver.quit()
+        response['content'].append(item_data)
+        return url, links, response, 'item extracted successfully'
 
 
 @celery.task(name='mine', bind=True)
