@@ -1,4 +1,4 @@
-PRICE_MINER_HOST = "http://localhost:5000"
+PRICE_MINER_HOST = "https://price-miner.herokuapp.com"
 
 BODY_REQUEST = {
     "url": "https://www.magazineluiza.com.br/iphone-8-apple-64gb-dourado-4g-tela-47-retina-cam-12mp-selfie-7mp-ios-11/p/155542800/te/teip/",
