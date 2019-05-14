@@ -27,41 +27,14 @@ def ping(self, **kwargs):
     return 'pong'
 
 
-@celery.task(name='mine', bind=True)
-def mine(self, data, *args, **kwargs):
-    url = data['url']
-    max_number = data['max_number']
-    similar_products_container_tag = data['similar_products_container_tag']
-    similar_products_container_class = data['similar_products_container_class']
-    response_data = data['data']
-    whitelist = data.get('whitelist', [])
-    blacklist = data.get('blacklist', [])
-    main_url = data.get('main_url', None)
-    sleep_time = data.get('sleep_time', 5)
-    max_number = 5 if max_number > 45 else max_number
-    sleep_time = 10 if sleep_time > 60 else sleep_time
+@celery.task(name='handle_request', bind=True, max_retries=5)
+def handle_request(self, url, max_number, similar_products_container_tag, similar_products_container_class,
+                   response, response_data, whitelist, blacklist, main_url, sleep_time, links, *args, **kwargs):
     driver = webdriver.Remote(command_executor=SELENIUM_WEBDRIVER_HOST,
                               desired_capabilities=DesiredCapabilities.FIREFOX)
-    links = list()
-    counter_for_memory_issues = 0
-
-    response = {
-        'last_url': '',
-        'content': [],
-    }
-
-    while True:
-        # TODO: Because selenium is on a small server we need to keep it cool
-        if counter_for_memory_issues == 10:
-            driver.quit()
-            time.sleep(50)
-            driver = webdriver.Remote(command_executor=SELENIUM_WEBDRIVER_HOST,
-                                      desired_capabilities=DesiredCapabilities.FIREFOX)
-            counter_for_memory_issues = 0
-        else:
-
-            counter_for_memory_issues += 1
-        try:
+    try:
+        counter = 0
+        while len(response['content']) != max_number or counter != 5:
             driver.get(url)
             time.sleep(sleep_time)
             soup = BeautifulSoup(driver.page_source, "lxml")
@@ -69,31 +42,14 @@ def mine(self, data, *args, **kwargs):
                                                      class_=similar_products_container_class)
             url, links = find_next_url(next_links_container_content, links, main_url)
             if any([d for d in response['content'] if soup.title.text in d.get('title', None)]):
-                self.update_state(state='EXTRACTING', meta={
-                    'job_percent_completed': len(response['content'])/max_number,
-                    'job_current_status': 'Title already exists or price container doesn\'t exist for url',
-                    'current_url': url,
-                    'Errors': None
-                })
+                print('Title already exists or price container doesn\'t exist for url')
                 continue
             elif whitelist or blacklist:
                 if whitelist and not any([item.lower() in soup.title.text.lower() for item in whitelist]):
-                    self.update_state(state='EXTRACTING', meta={
-                        'job_percent_completed': len(response['content']) / max_number,
-                        'job_current_status':
-                            'The item title does not contain one of the following types: %s' % ','.join(whitelist),
-                        'current_url': url,
-                        'Errors': None
-                    })
+                    print('The item title does not contain one of the following types: %s' % ','.join(whitelist))
                     continue
                 if blacklist and any([item.lower() in soup.title.text.lower() for item in blacklist]):
-                    self.update_state(state='EXTRACTING', meta={
-                        'job_percent_completed': len(response['content']) / max_number,
-                        'job_current_status':
-                            'The item title does contain one of the following types: %s' % ','.join(blacklist),
-                        'current_url': url,
-                        'Errors': None
-                    })
+                    print('The item title does contain one of the following types: %s' % ','.join(blacklist))
                     continue
             item_data = {
                 "title": soup.title.text,
@@ -113,31 +69,59 @@ def mine(self, data, *args, **kwargs):
                 else:
                     item_data['data'][to_extract['name']] = ''
             if set_loop_as_error:
-                self.update_state(state='EXTRACTING', meta={
-                    'job_percent_completed': len(response['content']) / max_number,
-                    'job_current_status':
-                        'One or more required data could not be extracted',
-                    'current_url': url,
-                    'Errors': None
-                })
+                print('One or more required data could not be extracted')
                 continue
             else:
+                counter += 1
                 response['content'].append(item_data)
-            if len(response['content']) == max_number:
-                response['last_url'] = url
-                driver.quit()
-                break
-            self.update_state(state='EXTRACTING', meta={
-                'job_percent_completed': len(response['content']) / max_number,
-                'job_current_status': 'Item extracted successfully',
-                'current_url': url,
-                'Errors': None
-            })
-        except Exception as e:
+        driver.quit()
+        return url, links, response
+    except Exception as e:
+        driver.quit()
+        raise self.retry(countdown=60, exc=e)
+
+
+@celery.task(name='mine', bind=True)
+def mine(self, data, *args, **kwargs):
+    url = data['url']
+    max_number = data['max_number']
+    similar_products_container_tag = data['similar_products_container_tag']
+    similar_products_container_class = data['similar_products_container_class']
+    response_data = data['data']
+    whitelist = data.get('whitelist', [])
+    blacklist = data.get('blacklist', [])
+    main_url = data.get('main_url', None)
+    sleep_time = data.get('sleep_time', 5)
+    max_number = 5 if max_number > 45 else max_number
+    sleep_time = 10 if sleep_time > 60 else sleep_time
+    links = list()
+
+    response = {
+        'last_url': '',
+        'content': [],
+    }
+    self.update_state(state='EXTRACTING', meta={
+        'job_percent_completed': len(response['content']) / max_number,
+        'current_url': url
+    })
+    while True:
+        handle_request_response = handle_request.delay(url, max_number,
+                                                       similar_products_container_tag,
+                                                       similar_products_container_class,
+                                                       response, response_data, whitelist, blacklist,
+                                                       main_url, sleep_time, links)
+
+        while not handle_request_response.ready():
+            time.sleep(5)
+        url, links, response = handle_request_response.result
+        self.update_state(state='EXTRACTING', meta={
+            'job_percent_completed': len(response['content'])/max_number,
+            'current_url': url,
+            'Errors': None
+        })
+
+        if len(response['content']) == max_number:
             response['last_url'] = url
-            print(e)
-            time.sleep(50)
-            driver = webdriver.Remote(command_executor=SELENIUM_WEBDRIVER_HOST,
-                                      desired_capabilities=DesiredCapabilities.FIREFOX)
-            continue
+            break
+
     return response

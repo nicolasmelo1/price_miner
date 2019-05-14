@@ -100,11 +100,16 @@ def mine():
                 status=res.state,
                 data=res.result
             )
-        else:
+        elif res.state == 'SUCCESS':
             return jsonify(
                 task_id=res.id,
                 status=res.state,
                 content=res.result
+            )
+        else:
+            return jsonify(
+                task_id=res.id,
+                status=res.state
             )
 
 

@@ -15,6 +15,7 @@ def extract(number_of_items=1):
             task_id = response.content
             while True:
                 request = requests.get(PRICE_MINER_HOST + '/mine', params={'job_id': task_id.decode("utf-8")})
+                print(request.content)
                 if request.status_code == 200 and 'content' in request.json():
                     break
                 time.sleep(20)
