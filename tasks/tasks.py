@@ -73,8 +73,8 @@ def handle_request(self, url, max_number, similar_products_container_tag, simila
             driver.quit()
             return url, links, response, 'One or more required data could not be extracted'
         else:
-            response['content'].append(item_data)
             driver.quit()
+            response['content'].append(item_data)
             return url, links, response, 'item extracted successfully'
     except Exception as e:
         driver.quit()
