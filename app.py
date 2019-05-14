@@ -98,13 +98,13 @@ def mine():
             return jsonify(
                 task_id=res.id,
                 status=res.state,
-                data=res.get()
+                data=res.result
             )
         else:
             return jsonify(
                 task_id=res.id,
                 status=res.state,
-                content=res.get()
+                content=res.result
             )
 
 
