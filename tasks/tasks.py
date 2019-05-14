@@ -38,7 +38,7 @@ def mine(self, data, *args, **kwargs):
     blacklist = data.get('blacklist', [])
     main_url = data.get('main_url', None)
     sleep_time = data.get('sleep_time', 5)
-    max_number = 5 if max_number > 85 else max_number
+    max_number = 5 if max_number > 45 else max_number
     sleep_time = 10 if sleep_time > 60 else sleep_time
     driver = webdriver.Remote(command_executor=SELENIUM_WEBDRIVER_HOST,
                               desired_capabilities=DesiredCapabilities.FIREFOX)
@@ -53,7 +53,6 @@ def mine(self, data, *args, **kwargs):
     while True:
         # TODO: Because selenium is on a small server we need to keep it cool
         if counter_for_memory_issues == 10:
-            driver.close()
             driver.quit()
             time.sleep(50)
             driver = webdriver.Remote(command_executor=SELENIUM_WEBDRIVER_HOST,

@@ -34,7 +34,7 @@ All the API uses just one url: `\mine`
 For `POST` requests send a **JSON** with the following parameters
 
 + **url** (*String*): Initial url from e-commerce to extract data from.
-+ **max_number** (*Integer*): max number of items to extract from e-commerce. Max: 85
++ **max_number** (*Integer*): max number of items to extract from e-commerce. Max: 45
 + **similar_products_container_tag** (*String*): The container for similar products (div, ul, etc.).
 + **similar_products_container_class** (*String*): The class of the container for similar products.
 + **data** (*List[dict]*): The container to get products price (div, ul, etc.).
