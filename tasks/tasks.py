@@ -40,7 +40,10 @@ def mine(self, data, *args, **kwargs):
     sleep_time = data.get('sleep_time', 5)
     max_number = 5 if max_number > 85 else max_number
     sleep_time = 10 if sleep_time > 60 else sleep_time
+    driver = webdriver.Remote(command_executor=SELENIUM_WEBDRIVER_HOST,
+                              desired_capabilities=DesiredCapabilities.FIREFOX)
     links = list()
+    counter_for_memory_issues = 0
 
     response = {
         'last_url': '',
@@ -48,9 +51,18 @@ def mine(self, data, *args, **kwargs):
     }
 
     while True:
-        try:
+        # TODO: Because selenium is on a small server we need to keep it cool
+        if counter_for_memory_issues == 10:
+            driver.close()
+            driver.quit()
+            time.sleep(50)
             driver = webdriver.Remote(command_executor=SELENIUM_WEBDRIVER_HOST,
                                       desired_capabilities=DesiredCapabilities.FIREFOX)
+            counter_for_memory_issues = 0
+        else:
+
+            counter_for_memory_issues += 1
+        try:
             driver.get(url)
             time.sleep(sleep_time)
             soup = BeautifulSoup(driver.page_source, "lxml")
@@ -64,7 +76,6 @@ def mine(self, data, *args, **kwargs):
                     'current_url': url,
                     'Errors': None
                 })
-                driver.quit()
                 continue
             elif whitelist or blacklist:
                 if whitelist and not any([item.lower() in soup.title.text.lower() for item in whitelist]):
@@ -75,7 +86,6 @@ def mine(self, data, *args, **kwargs):
                         'current_url': url,
                         'Errors': None
                     })
-                    driver.quit()
                     continue
                 if blacklist and any([item.lower() in soup.title.text.lower() for item in blacklist]):
                     self.update_state(state='EXTRACTING', meta={
@@ -85,7 +95,6 @@ def mine(self, data, *args, **kwargs):
                         'current_url': url,
                         'Errors': None
                     })
-                    driver.quit()
                     continue
             item_data = {
                 "title": soup.title.text,
@@ -112,7 +121,6 @@ def mine(self, data, *args, **kwargs):
                     'current_url': url,
                     'Errors': None
                 })
-                driver.quit()
                 continue
             else:
                 response['content'].append(item_data)
@@ -126,7 +134,6 @@ def mine(self, data, *args, **kwargs):
                 'current_url': url,
                 'Errors': None
             })
-            driver.quit()
         except Exception as e:
             response['last_url'] = url
             print(e)
