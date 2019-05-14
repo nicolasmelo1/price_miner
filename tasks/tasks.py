@@ -40,7 +40,6 @@ def mine(self, data, *args, **kwargs):
     sleep_time = data.get('sleep_time', 5)
     max_number = 5 if max_number > 85 else max_number
     sleep_time = 10 if sleep_time > 60 else sleep_time
-    driver = webdriver.Remote(command_executor=SELENIUM_WEBDRIVER_HOST, desired_capabilities=DesiredCapabilities.FIREFOX)
     links = list()
 
     response = {
@@ -50,6 +49,8 @@ def mine(self, data, *args, **kwargs):
 
     while True:
         try:
+            driver = webdriver.Remote(command_executor=SELENIUM_WEBDRIVER_HOST,
+                                      desired_capabilities=DesiredCapabilities.FIREFOX)
             driver.get(url)
             time.sleep(sleep_time)
             soup = BeautifulSoup(driver.page_source, "lxml")
@@ -63,6 +64,7 @@ def mine(self, data, *args, **kwargs):
                     'current_url': url,
                     'Errors': None
                 })
+                driver.quit()
                 continue
             elif whitelist or blacklist:
                 if whitelist and not any([item.lower() in soup.title.text.lower() for item in whitelist]):
@@ -73,6 +75,7 @@ def mine(self, data, *args, **kwargs):
                         'current_url': url,
                         'Errors': None
                     })
+                    driver.quit()
                     continue
                 if blacklist and any([item.lower() in soup.title.text.lower() for item in blacklist]):
                     self.update_state(state='EXTRACTING', meta={
@@ -82,6 +85,7 @@ def mine(self, data, *args, **kwargs):
                         'current_url': url,
                         'Errors': None
                     })
+                    driver.quit()
                     continue
             item_data = {
                 "title": soup.title.text,
@@ -108,11 +112,10 @@ def mine(self, data, *args, **kwargs):
                     'current_url': url,
                     'Errors': None
                 })
+                driver.quit()
                 continue
             else:
                 response['content'].append(item_data)
-            next_links_container_content = soup.find(similar_products_container_tag,
-                                                     class_=similar_products_container_class)
             if len(response['content']) == max_number:
                 response['last_url'] = url
                 driver.quit()
@@ -123,7 +126,7 @@ def mine(self, data, *args, **kwargs):
                 'current_url': url,
                 'Errors': None
             })
-            url, links = find_next_url(next_links_container_content, links, main_url)
+            driver.quit()
         except Exception as e:
             response['last_url'] = url
             print(e)
