@@ -126,6 +126,8 @@ def mine(self, data, *args, **kwargs):
             response['last_url'] = url
             break
 
+        handle_request_response.forget()
+
         if len(response['content']) == max_number:
             response['last_url'] = url
             break
