@@ -30,9 +30,9 @@ def ping(self, **kwargs):
 @celery.task(name='handle_request', bind=True, max_retries=5)
 def handle_request(self, url, max_number, similar_products_container_tag, similar_products_container_class,
                    response, response_data, whitelist, blacklist, main_url, sleep_time, links, *args, **kwargs):
-    driver = webdriver.Remote(command_executor=SELENIUM_WEBDRIVER_HOST,
-                              desired_capabilities=DesiredCapabilities.FIREFOX)
     try:
+        driver = webdriver.Remote(command_executor=SELENIUM_WEBDRIVER_HOST,
+                                  desired_capabilities=DesiredCapabilities.FIREFOX)
         driver.get(url)
         time.sleep(sleep_time)
         soup = BeautifulSoup(driver.page_source, "lxml")
@@ -77,8 +77,7 @@ def handle_request(self, url, max_number, similar_products_container_tag, simila
             response['content'].append(item_data)
             return url, links, response, 'item extracted successfully'
     except Exception as e:
-        driver.quit()
-        raise self.retry(countdown=60, exc=e)
+        raise self.retry(countdown=20, exc=e)
 
 
 @celery.task(name='mine', bind=True)
