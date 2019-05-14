@@ -92,7 +92,7 @@ def mine(self, data, *args, **kwargs):
     blacklist = data.get('blacklist', [])
     main_url = data.get('main_url', None)
     sleep_time = data.get('sleep_time', 5)
-    max_number = 5 if max_number > 45 else max_number
+    max_number = 5 if max_number > 100 else max_number
     sleep_time = 10 if sleep_time > 60 else sleep_time
     links = list()
 
