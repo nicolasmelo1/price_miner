@@ -30,7 +30,7 @@ def extract(number_of_items=1):
                     for key, value in item['data'].items():
                         temp[key] = value
                     data_holder.append(temp)
-                pd.DataFrame.from_dict(data, orient='index', columns=['title', 'price']).to_csv('magalu_data.csv')
+                pd.DataFrame(data_holder).to_csv('aliexpress_data.csv')
                 break
 
 

@@ -4,21 +4,30 @@ from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from random import randint
+import requests
 
 
-def find_next_url(next_links_container_content, links, main_url):
-    if next_links_container_content:
-        possible_next_links = [a['href'] for a in next_links_container_content.find_all("a", href=True)]
-        if main_url:
-            next_link = main_url + possible_next_links[randint(0, len(possible_next_links) - 1)]
-            links.append(next_link)
-            url = next_link
-        else:
-            next_link = possible_next_links[randint(0, len(possible_next_links) - 1)]
-            links.append(next_link)
-            url = next_link
-    else:
-        url = links[randint(0, len(links) - 1)]
+def find_next_url(next_links_container_contents, response, links, whitelist, main_url):
+    url = links[randint(0, len(links) - 1)] if links else ''
+
+    if next_links_container_contents:
+        possible_next_links = list()
+        for next_links_container_content in next_links_container_contents:
+            possible_next_links = possible_next_links + [a['href'] for a in next_links_container_content.find_all("a", href=True)]
+        for link in possible_next_links:
+            if not main_url and link not in links:
+                next_link = link
+                links.append(next_link)
+                url = next_link
+                break
+            elif main_url and main_url+link not in links:
+                next_link = main_url + link
+                links.append(next_link)
+                url = next_link
+                break
+    url = url[url.find('//')+2:]
+    url = 'https://' + url
+
     return url, links
 
 
@@ -30,14 +39,31 @@ def ping(self, **kwargs):
 @celery.task(name='handle_request', bind=True, max_retries=5)
 def handle_request(self, url, max_number, similar_products_container_tag, similar_products_container_class,
                    response, response_data, whitelist, blacklist, main_url, sleep_time, links, *args, **kwargs):
+    options = webdriver.ChromeOptions()
+    options.add_argument('--headless')
+    options.add_argument('--no-sandbox')
+    options.add_argument('--single-process')
+    options.add_argument('--disable-dev-shm-usage')
     driver = webdriver.Remote(command_executor=SELENIUM_WEBDRIVER_HOST,
-                              desired_capabilities=DesiredCapabilities.FIREFOX)
+                              desired_capabilities=options.to_capabilities())
+
     driver.get(url)
+    for num in range(0, len(similar_products_container_class)):
+        elements = driver.find_elements_by_class_name(similar_products_container_class[num])
+        for element in elements:
+            driver.execute_script("arguments[0].scrollIntoView();", element)
     time.sleep(sleep_time)
     soup = BeautifulSoup(driver.page_source, "lxml")
-    next_links_container_content = soup.find(similar_products_container_tag,
-                                             class_=similar_products_container_class)
-    url, links = find_next_url(next_links_container_content, links, main_url)
+
+    text_file = open("index.html", "w")
+    text_file.write(str(soup))
+    text_file.close()
+
+    next_links_container_content = list()
+    for num in range(0, len(similar_products_container_class)):
+        next_links_container_content = next_links_container_content + soup.find_all(similar_products_container_tag[num],
+                                                                                    class_=similar_products_container_class[num])
+    url, links = find_next_url(next_links_container_content, response, links, whitelist, main_url)
     if any([d for d in response['content'] if soup.title.text in d.get('title', None)]):
         driver.quit()
         return url, links, response, 'Title already exists or price container doesn\'t exist for url'
